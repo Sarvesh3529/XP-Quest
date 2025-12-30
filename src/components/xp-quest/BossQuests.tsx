@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useQuest } from '@/hooks/useQuest';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { TaskItem } from './TaskItem';
@@ -10,8 +10,15 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
 export function BossQuests() {
   const { tasks } = useQuest();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const bossQuests = useMemo(() => {
+    if (!isClient) return [];
+    
     const now = new Date();
     const weekInterval = { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
     const monthInterval = { start: startOfMonth(now), end: endOfMonth(now) };
@@ -25,7 +32,7 @@ export function BossQuests() {
       }
       return false;
     });
-  }, [tasks]);
+  }, [tasks, isClient]);
 
   if (bossQuests.length === 0) return null;
 
