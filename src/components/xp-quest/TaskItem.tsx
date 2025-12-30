@@ -1,0 +1,113 @@
+"use client";
+
+import { useState, useMemo } from 'react';
+import { useQuest } from '@/hooks/useQuest';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Check, Trash2, Zap, Trophy, Calendar } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { Task, TaskDifficulty } from '@/lib/types';
+import { XpGain } from './animations/XpGain';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+const difficultyConfig: Record<TaskDifficulty, { className: string; icon: React.ElementType }> = {
+  Easy: { className: "bg-green-500/20 text-green-400 border-green-500/30", icon: Zap },
+  Medium: { className: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30", icon: Zap },
+  Hard: { className: "bg-red-500/20 text-red-400 border-red-500/30", icon: Zap },
+};
+
+const bossQuestConfig: Record<string, { className: string; icon: React.ElementType }> = {
+  weekly: { className: "bg-purple-500/20 text-purple-400 border-purple-500/30", icon: Calendar },
+  monthly: { className: "bg-orange-500/20 text-orange-400 border-orange-500/30", icon: Trophy },
+};
+
+export function TaskItem({ task }: { task: Task }) {
+  const { toggleCompletion, deleteTask, completionsForSelectedDate, isDateLocked } = useQuest();
+  const [showXp, setShowXp] = useState<number | null>(null);
+
+  const isCompleted = useMemo(() => 
+    completionsForSelectedDate.some(c => c.taskId === task.id),
+    [completionsForSelectedDate, task.id]
+  );
+  
+  const completion = useMemo(() => 
+    completionsForSelectedDate.find(c => c.taskId === task.id),
+    [completionsForSelectedDate, task.id]
+  );
+
+  const handleComplete = () => {
+    const wasCompleted = isCompleted;
+    toggleCompletion(task.id);
+    if (!wasCompleted && completion) {
+      setShowXp(completion.xpGained);
+    }
+  };
+
+  const config = task.isBossQuest 
+    ? bossQuestConfig[task.isBossQuest]
+    : difficultyConfig[task.difficulty];
+
+  const Icon = config.icon;
+
+  return (
+    <div className={cn(
+      "flex items-center gap-4 p-3 rounded-lg border border-transparent transition-all relative overflow-hidden",
+      isCompleted ? "bg-primary/10 border-primary/20" : "bg-card/60 hover:bg-secondary/50 hover:border-border"
+    )}>
+      {showXp !== null && isDateLocked && (
+        <XpGain xp={showXp} onAnimationEnd={() => setShowXp(null)} />
+      )}
+      <div className="flex-shrink-0">
+        <Button
+          size="icon"
+          variant={isCompleted ? "default" : "outline"}
+          onClick={handleComplete}
+          className={cn(
+            "h-8 w-8 rounded-full transition-all",
+            isCompleted && "bg-primary border-primary hover:bg-primary/90",
+            !isCompleted && "border-border/50"
+          )}
+        >
+          <Check className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="flex-grow">
+        <p className={cn("font-medium", isCompleted && "line-through text-muted-foreground")}>
+          {task.text}
+        </p>
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <TooltipProvider>
+            <Tooltip delayDuration={0}>
+                <TooltipTrigger>
+                     <Badge variant="outline" className={cn("font-code uppercase", config.className)}>
+                        <Icon className="h-3 w-3 mr-1.5" />
+                        {task.isBossQuest || task.difficulty}
+                    </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{task.isBossQuest ? 'Boss Quest' : `${task.difficulty} Difficulty`}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+
+        {!isDateLocked && !task.isBossQuest && (
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => deleteTask(task.id)}
+            className="h-8 w-8 text-muted-foreground hover:text-destructive/80"
+            aria-label="Delete task"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
