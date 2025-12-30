@@ -18,7 +18,7 @@ export function RankApp() {
     const { totalXp, currentRank, nextRank, rankProgress, xpToNextRank } = useQuest();
 
     return (
-        <div className="container mx-auto max-w-4xl space-y-8">
+        <div className="container mx-auto max-w-2xl space-y-8">
             <Card className="border-primary/30 bg-card/80 overflow-hidden">
                 <div className="p-6 bg-gradient-to-br from-primary/20 to-transparent">
                     <div className="flex flex-col md:flex-row items-center gap-6">
@@ -42,24 +42,24 @@ export function RankApp() {
 
             <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-center">All Ranks</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="flex flex-col gap-4">
                     {RANKS.map(rank => {
                         const isAchieved = totalXp >= rank.xpThreshold;
                         const isCurrent = rank.name === currentRank.name;
                         return (
                             <Card key={rank.name} className={cn(
-                                "border-border/60 bg-card/60 transition-all",
+                                "border-border/60 bg-card/60 transition-all flex items-center p-4",
                                 isCurrent && "border-primary/80 ring-2 ring-primary/50",
                                 !isAchieved && !isCurrent && "opacity-50"
                             )}>
-                                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                    <CardTitle className="text-lg">{rank.name}</CardTitle>
-                                    {isAchieved && <CheckCircle className="w-5 h-5 text-primary" />}
-                                </CardHeader>
-                                <CardContent className="flex flex-col items-center gap-2">
-                                    <Icon name={rank.icon} className="w-16 h-16 text-primary/80" />
+                                <div className="flex-shrink-0 mr-4">
+                                     <Icon name={rank.icon} className="w-12 h-12 text-primary/80" />
+                                </div>
+                                <div className="flex-grow">
+                                    <h3 className="text-lg font-bold">{rank.name}</h3>
                                     <p className="text-sm font-code text-muted-foreground">{rank.xpThreshold.toLocaleString()} XP</p>
-                                </CardContent>
+                                </div>
+                                {isAchieved && <CheckCircle className="w-6 h-6 text-primary flex-shrink-0" />}
                             </Card>
                         )
                     })}
