@@ -19,7 +19,7 @@ export function RankApp() {
 
     return (
         <div className="container mx-auto max-w-2xl space-y-8">
-            <Card className="border-primary/30 bg-card/80 overflow-hidden">
+            <Card className="border-primary/30 bg-card/80 overflow-hidden box-glow-primary">
                 <div className="p-6 bg-gradient-to-br from-primary/20 to-transparent">
                     <div className="flex flex-col md:flex-row items-center gap-6">
                         <Icon name={currentRank.icon} className="w-24 h-24 text-primary text-glow-primary" />
@@ -48,8 +48,8 @@ export function RankApp() {
                         const isCurrent = rank.name === currentRank.name;
                         return (
                             <Card key={rank.name} className={cn(
-                                "border-border/60 bg-card/60 transition-all flex items-center p-4",
-                                isCurrent && "border-primary/80 ring-2 ring-primary/50",
+                                "flex items-center p-4",
+                                isCurrent && "border-primary/80 ring-2 ring-primary/50 box-glow-primary",
                                 !isAchieved && !isCurrent && "opacity-50"
                             )}>
                                 <div className="flex-shrink-0 mr-4">
