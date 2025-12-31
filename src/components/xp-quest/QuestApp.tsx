@@ -25,19 +25,12 @@ export function QuestApp() {
                 <DatePicker />
                 <RankBadge />
                 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Column 1: Streak and Wake Up Time */}
-                    <div className="grid grid-cols-2 gap-6">
-                        <DailyStreak />
-                        <WakeUpTime />
-                    </div>
-
-                    {/* Column 2: Workout Tracker */}
-                    <WorkoutTracker />
-
-                    {/* Column 3: Spacer or another component */}
-                    <div></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <DailyStreak />
+                    <WakeUpTime />
                 </div>
+
+                <WorkoutTracker />
 
                 <div className="space-y-6">
                     <Card className="border-border/60 bg-card/60">
