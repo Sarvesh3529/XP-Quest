@@ -14,14 +14,15 @@ import {z} from 'genkit';
 const GenerateMonthlyReportInputSchema = z.object({
   completedTasks: z
     .string()
-    .describe("A list of completed tasks for the month, separated by commas."),
+    .describe('A list of completed tasks for the month, separated by commas.'),
 });
 export type GenerateMonthlyReportInput = z.infer<typeof GenerateMonthlyReportInputSchema>;
 
 const GenerateMonthlyReportOutputSchema = z.object({
   report: z.string().describe('The generated monthly progress report.'),
-  improvementSuggestions:
-    z.string().describe('Suggestions for improvement in the next month.'),
+  improvementSuggestions: z
+    .string()
+    .describe('Suggestions for improvement in the next month.'),
 });
 export type GenerateMonthlyReportOutput = z.infer<typeof GenerateMonthlyReportOutputSchema>;
 
@@ -35,15 +36,11 @@ const generateMonthlyReportPrompt = ai.definePrompt({
   name: 'generateMonthlyReportPrompt',
   input: {schema: GenerateMonthlyReportInputSchema},
   output: {schema: GenerateMonthlyReportOutputSchema},
-  prompt: `You are an AI assistant that generates monthly progress reports based on completed tasks.
+  prompt: `You are an AI assistant that generates monthly progress reports.
+Based on the following completed tasks, generate a comprehensive monthly progress report and provide actionable suggestions for improvement next month.
 
-  Completed Tasks: {{{completedTasks}}}
-
-  Generate a comprehensive monthly progress report, including insights into the user's productivity and suggestions for improvement in the next month.
-  Your report should be detailed and actionable.
-  Make sure to use the improvementSuggestions in the {{output.schema}} schema to generate suggestions for improvement in the next month based on the user's completed tasks
-  Report:
-  `,
+Completed Tasks: {{{completedTasks}}}
+`,
 });
 
 const generateMonthlyReportFlow = ai.defineFlow(
