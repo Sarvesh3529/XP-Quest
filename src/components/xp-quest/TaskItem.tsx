@@ -106,7 +106,7 @@ export function TaskItem({ task }: { task: Task }) {
           size="icon"
           variant={isCompleted ? "default" : "outline"}
           onClick={handleComplete}
-          disabled={!task.isBossQuest && !isDateLocked}
+          disabled={!task.isBossQuest && !isDateLocked && !isCompleted}
           className={cn(
             "h-8 w-8 rounded-full transition-all",
             isCompleted && "bg-primary border-primary hover:bg-primary/90",
