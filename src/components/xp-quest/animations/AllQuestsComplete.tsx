@@ -1,7 +1,9 @@
+
 "use client";
 
 import { motion } from 'framer-motion';
 import { PartyPopper } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const ConfettiPiece = ({ left, top, delay, duration, color }: any) => (
   <motion.div
@@ -14,8 +16,18 @@ const ConfettiPiece = ({ left, top, delay, duration, color }: any) => (
 );
 
 export function AllQuestsComplete() {
+  const [visible, setVisible] = useState(true);
   const confettiColors = ['#39FF14', '#7DF9FF', '#FFFFFF'];
   const numConfetti = 100;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(false), 4000); // Hide after 4 seconds
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!visible) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-none">
