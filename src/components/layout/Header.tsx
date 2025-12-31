@@ -21,7 +21,7 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="flex h-16 items-center gap-4 border-b bg-card/50 px-4 md:hidden sticky top-0 z-30">
+    <header className="flex h-16 items-center gap-4 border-b bg-card/50 px-4 md:hidden sticky top-0 z-30 backdrop-blur-sm">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button size="icon" variant="outline" className="sm:hidden">
