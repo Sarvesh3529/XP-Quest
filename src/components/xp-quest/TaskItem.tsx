@@ -98,7 +98,7 @@ export function TaskItem({ task }: { task: Task }) {
       isCompleted ? "bg-primary/10 border-primary/20" : "bg-card/60 hover:bg-secondary/50",
        task.isBossQuest ? "border-amber-500/30" : "border-transparent hover:border-border"
     )}>
-      {showXp !== null && (isDateLocked || task.isBossQuest) && (
+      {showXp !== null && (
         <XpGain xp={showXp} onAnimationEnd={() => setShowXp(null)} />
       )}
       <div className="flex-shrink-0">

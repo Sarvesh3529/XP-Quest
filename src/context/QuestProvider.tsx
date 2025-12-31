@@ -1,8 +1,9 @@
+
 "use client";
 
 import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { format, parseISO, isSameDay, isYesterday, startOfDay, endOfDay, getMonth, getYear } from 'date-fns';
+import { format, parseISO, isSameDay, isYesterday, startOfDay, endOfDay, getMonth, getYear, subDays } from 'date-fns';
 import type { Task, Completion, WakeUpTime, Workout, Streak, Rank, TaskDifficulty, BossQuestType, MonthlyReport } from '@/lib/types';
 import { DIFFICULTY_POINTS, DAILY_XP_BUDGET, BOSS_QUEST_XP } from '@/lib/types';
 import { RANKS } from '@/lib/data';
@@ -95,7 +96,7 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
       currentRank: current,
       nextRank: next,
       rankProgress: progress,
-      xpToNextRank: xpForNext - totalXp,
+      xpToNextRank: next ? xpForNext - totalXp : 0,
     };
   }, [totalXp]);
 
@@ -200,13 +201,13 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
     const lastWorkoutDate = streak.lastDate ? parseISO(streak.lastDate) : null;
     
     if (workedOut) {
-      if (lastWorkoutDate && isYesterday(lastWorkoutDate, today)) {
+      if (lastWorkoutDate && isYesterday(today)) {
         setStreak(prev => ({ current: prev.current + 1, lastDate: formattedSelectedDate }));
       } else if (!lastWorkoutDate || !isSameDay(lastWorkoutDate, today)) {
         setStreak({ current: 1, lastDate: formattedSelectedDate });
       }
     } else { // Rest day or missed day before logging
-       if (lastWorkoutDate && !isSameDay(lastWorkoutDate, today)) {
+       if (lastWorkoutDate && !isSameDay(lastWorkoutDate, today) && !isYesterday(today)) {
         setStreak(prev => ({ ...prev, current: 0 }));
       }
     }
