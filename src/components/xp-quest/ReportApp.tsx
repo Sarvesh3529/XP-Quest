@@ -71,7 +71,7 @@ export function ReportApp() {
         <CardHeader>
             <div className="flex justify-between items-start flex-wrap gap-4">
                 <div>
-                    <CardTitle className="text-2xl text-glow-primary">Monthly Progress Report</CardTitle>
+                    <CardTitle className="text-2xl text-glow-primary">Monthly Performance Debrief</CardTitle>
                     <CardDescription>
                         AI-powered insights for {format(currentDate, 'MMMM yyyy')}.
                     </CardDescription>
@@ -86,11 +86,11 @@ export function ReportApp() {
             {reportIsForCurrentMonth && monthlyReport ? (
             <div className="space-y-6 animate-in fade-in duration-500">
                 <div>
-                <h3 className="font-bold text-lg mb-2 text-primary">Monthly Summary</h3>
+                <h3 className="font-bold text-lg mb-2 text-primary">Performance Debrief</h3>
                 <p className="text-muted-foreground whitespace-pre-wrap">{monthlyReport.report}</p>
                 </div>
                 <div>
-                <h3 className="font-bold text-lg mb-2 text-accent">Improvement Suggestions</h3>
+                <h3 className="font-bold text-lg mb-2 text-accent">Actionable Directives</h3>
                 <p className="text-muted-foreground whitespace-pre-wrap">{monthlyReport.improvementSuggestions}</p>
                 </div>
             </div>

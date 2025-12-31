@@ -19,10 +19,10 @@ const GenerateMonthlyReportInputSchema = z.object({
 export type GenerateMonthlyReportInput = z.infer<typeof GenerateMonthlyReportInputSchema>;
 
 const GenerateMonthlyReportOutputSchema = z.object({
-  report: z.string().describe('The generated monthly progress report, formatted in paragraphs.'),
+  report: z.string().describe("A critical, no-nonsense summary of the user's performance, formatted in paragraphs."),
   improvementSuggestions: z
     .string()
-    .describe('Suggestions for improvement in the next month, formatted as a bulleted or numbered list.'),
+    .describe('A direct, actionable, and bulleted list of commands for improvement.'),
 });
 export type GenerateMonthlyReportOutput = z.infer<typeof GenerateMonthlyReportOutputSchema>;
 
@@ -36,14 +36,14 @@ const generateMonthlyReportPrompt = ai.definePrompt({
   name: 'generateMonthlyReportPrompt',
   input: {schema: GenerateMonthlyReportInputSchema},
   output: {schema: GenerateMonthlyReportOutputSchema},
-  prompt: `You are a Life Coach AI. Your role is to provide encouraging and insightful monthly progress reports based on a user's completed tasks.
+  prompt: `You are a tough, no-nonsense performance coach. Your job is to provide brutally honest feedback to help users achieve peak performance. Do not use encouraging or soft language. Be direct and analytical.
 
-Analyze the following list of tasks completed this month:
+Analyze the user's completed tasks for the month:
 {{{completedTasks}}}
 
-Based on these tasks, generate:
-1.  A comprehensive, paragraph-based 'Monthly Progress Report' that summarizes the user's achievements and patterns.
-2.  A bulleted or numbered list of 'Improvement Suggestions' with actionable advice for the upcoming month.`,
+Based on this data, provide the following:
+1.  A critical, no-nonsense 'Performance Debrief' that analyzes the user's achievements, weaknesses, and patterns. Identify what they did right and where they fell short.
+2.  A bulleted list of 'Actionable Directives' for the next month. These must be clear, concise commands for improvement. Focus on weaknesses and maximizing strengths.`,
 });
 
 const generateMonthlyReportFlow = ai.defineFlow(
