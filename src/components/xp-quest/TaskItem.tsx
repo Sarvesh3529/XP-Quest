@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
@@ -39,8 +40,8 @@ const TimeRemaining = ({ task }: { task: Task }) => {
     if (!task.isBossQuest) return null;
 
     const deadline = task.isBossQuest === 'weekly' 
-        ? addDays(task.createdAt, 7) 
-        : addMonths(task.createdAt, 1);
+        ? addDays(new Date(task.createdAt), 7) 
+        : addDays(new Date(task.createdAt), 30);
 
     const daysLeft = differenceInDays(deadline, now);
     const hoursLeft = differenceInHours(deadline, now) % 24;
