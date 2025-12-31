@@ -1,11 +1,24 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { useQuest } from '@/hooks/useQuest';
 import { Button } from '@/components/ui/button';
 import { Dumbbell, Bed, CheckCircle2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function WorkoutTracker() {
   const { setWorkoutStatus, workoutForSelectedDate } = useQuest();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <Skeleton className="h-[152px] w-full" />
+    );
+  }
 
   if (workoutForSelectedDate) {
     return (
