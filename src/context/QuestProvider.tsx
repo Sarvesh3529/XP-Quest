@@ -2,11 +2,10 @@
 
 import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
 import useLocalStorage from '@/hooks/useLocalStorage';
-import { format, parseISO, isSameDay, isYesterday, startOfDay, endOfDay, getMonth, getYear, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { format, parseISO, isSameDay, isYesterday, startOfDay, endOfDay, getMonth, getYear } from 'date-fns';
 import type { Task, Completion, WakeUpTime, Workout, Streak, Rank, TaskDifficulty, BossQuestType, MonthlyReport } from '@/lib/types';
 import { DIFFICULTY_POINTS, DAILY_XP_BUDGET, BOSS_QUEST_XP } from '@/lib/types';
 import { RANKS } from '@/lib/data';
-import { WEEKLY_BOSS_QUESTS, MONTHLY_BOSS_QUESTS } from '@/lib/boss-quests-data';
 
 export interface QuestContextType {
   // State
@@ -37,8 +36,9 @@ export interface QuestContextType {
   // Actions
   selectDate: (date: Date) => void;
   addTask: (text: string, difficulty: TaskDifficulty) => void;
+  addBossQuest: (text: string, type: BossQuestType) => void;
   deleteTask: (taskId: string) => void;
-  toggleCompletion: (taskId: string) => void;
+  toggleCompletion: (taskId: string) => number | undefined;
   lockDate: () => void;
   setWakeUpTime: (time: string) => Promise<string | null>;
   setWorkoutStatus: (workedOut: boolean) => void;
@@ -67,8 +67,10 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
   const isDateLocked = useMemo(() => lockedDates.includes(formattedSelectedDate), [lockedDates, formattedSelectedDate]);
 
   const tasksForSelectedDate = useMemo(() => {
-    const dayEnd = endOfDay(selectedDate).getTime();
-    return tasks.filter(task => task.createdAt <= dayEnd);
+    return tasks.filter(task => {
+        if (task.isBossQuest) return false;
+        return isSameDay(task.createdAt, selectedDate);
+    });
   }, [tasks, selectedDate]);
   
   const completionsForSelectedDate = useMemo(() => {
@@ -108,23 +110,26 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
       return BOSS_QUEST_XP[task.isBossQuest];
     }
     
-    const dailyTasks = tasksForSelectedDate.filter(t => !t.isBossQuest && isSameDay(t.createdAt, selectedDate));
-    const totalPoints = dailyTasks.reduce((sum, t) => sum + DIFFICULTY_POINTS[t.difficulty], 0);
+    const dailyTasksForDate = tasks.filter(t => !t.isBossQuest && isSameDay(t.createdAt, task.createdAt));
+    const totalPoints = dailyTasksForDate.reduce((sum, t) => sum + DIFFICULTY_POINTS[t.difficulty], 0);
 
     if (totalPoints === 0) return 0;
 
     const taskPoints = DIFFICULTY_POINTS[task.difficulty];
     return Math.round((taskPoints / totalPoints) * DAILY_XP_BUDGET);
-  }, [tasks, tasksForSelectedDate, selectedDate]);
+  }, [tasks]);
   
   const toggleCompletion = (taskId: string) => {
-    if (!isDateLocked) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    if (!task.isBossQuest && !isDateLocked) {
       setFlashLock(true);
       setTimeout(() => setFlashLock(false), 1000);
       return;
     }
 
-    const existingCompletion = completionsForSelectedDate.find(c => c.taskId === taskId);
+    const existingCompletion = completions.find(c => c.taskId === taskId);
 
     if (existingCompletion) {
       // Un-complete task
@@ -135,10 +140,11 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
       const newCompletion: Completion = {
         id: crypto.randomUUID(),
         taskId,
-        date: formattedSelectedDate,
+        date: task.isBossQuest ? format(new Date(), 'yyyy-MM-dd') : formattedSelectedDate,
         xpGained,
       };
       setCompletions(prev => [...prev, newCompletion]);
+      return xpGained;
     }
   };
 
@@ -150,6 +156,17 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
       createdAt: selectedDate.getTime(),
     };
     setTasks(prev => [...prev, newTask]);
+  };
+  
+  const addBossQuest = (text: string, type: BossQuestType) => {
+     const newQuest: Task = {
+        id: crypto.randomUUID(),
+        text,
+        difficulty: 'Hard', // All boss quests are Hard
+        isBossQuest: type,
+        createdAt: new Date().getTime(),
+    };
+    setTasks(prev => [...prev, newQuest]);
   };
 
   const deleteTask = (taskId: string) => {
@@ -220,52 +237,21 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
 
   // Effect for Rank Up
   useEffect(() => {
-    const previousXp = totalXp - (completions[completions.length-1]?.xpGained || 0);
-    const prevRank = [...RANKS].reverse().find(r => previousXp >= r.xpThreshold) ?? RANKS[0];
+    if (completions.length === 0) return;
+    const lastCompletion = completions[completions.length - 1];
+    if (!lastCompletion) return;
 
-    if (prevRank.name !== currentRank.name) {
-      setRankUpInfo({ oldRank: prevRank, newRank: currentRank });
-    }
-  }, [totalXp, currentRank, completions]);
-
-  // Effect for Auto-adding Boss Quests
-  useEffect(() => {
-    const now = new Date();
+    const currentTotalXp = totalXp;
+    const previousXp = currentTotalXp - lastCompletion.xpGained;
     
-    // Weekly
-    const startOfCurrentWeek = startOfWeek(now, { weekStartsOn: 1 });
-    const weeklyQuestExists = tasks.some(t => t.isBossQuest === 'weekly' && t.createdAt >= startOfCurrentWeek.getTime());
-    if (!weeklyQuestExists) {
-        const activeWeeklyQuests = tasks.filter(t => t.isBossQuest === 'weekly');
-        const lastWeeklyQuestText = activeWeeklyQuests[activeWeeklyQuests.length - 1]?.text;
-        const lastIndex = WEEKLY_BOSS_QUESTS.findIndex(q => q.text === lastWeeklyQuestText);
-        const nextQuest = WEEKLY_BOSS_QUESTS[(lastIndex + 1) % WEEKLY_BOSS_QUESTS.length];
-        
-        const newQuest: Task = {
-            id: `boss-weekly-${crypto.randomUUID()}`,
-            createdAt: startOfCurrentWeek.getTime(),
-            ...nextQuest
-        };
-        setTasks(prev => [...prev, newQuest]);
-    }
+    const prevRank = [...RANKS].reverse().find(r => previousXp >= r.xpThreshold) ?? RANKS[0];
+    const newCurrentRank = [...RANKS].reverse().find(r => currentTotalXp >= r.xpThreshold) ?? RANKS[0];
 
-    // Monthly
-    const startOfCurrentMonth = startOfMonth(now);
-    const monthlyQuestExists = tasks.some(t => t.isBossQuest === 'monthly' && t.createdAt >= startOfCurrentMonth.getTime());
-     if (!monthlyQuestExists) {
-        const activeMonthlyQuests = tasks.filter(t => t.isBossQuest === 'monthly');
-        const lastMonthlyQuestText = activeMonthlyQuests[activeMonthlyQuests.length - 1]?.text;
-        const lastIndex = MONTHLY_BOSS_QUESTS.findIndex(q => q.text === lastMonthlyQuestText);
-        const nextQuest = MONTHLY_BOSS_QUESTS[(lastIndex + 1) % MONTHLY_BOSS_QUESTS.length];
-
-        const newQuest: Task = {
-            id: `boss-monthly-${crypto.randomUUID()}`,
-            createdAt: startOfCurrentMonth.getTime(),
-            ...nextQuest,
-        };
-        setTasks(prev => [...prev, newQuest]);
+    if (prevRank.name !== newCurrentRank.name) {
+      setRankUpInfo({ oldRank: prevRank, newRank: newCurrentRank });
     }
-}, [tasks, setTasks]);
+  }, [totalXp, completions]);
+
 
   const contextValue: QuestContextType = {
     selectedDate,
@@ -291,6 +277,7 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
     getTasksByIds,
     selectDate,
     addTask,
+    addBossQuest,
     deleteTask,
     toggleCompletion,
     lockDate,

@@ -1,57 +1,115 @@
 "use client";
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuest } from '@/hooks/useQuest';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { TaskItem } from './TaskItem';
-import { Swords } from 'lucide-react';
-import { isWithinInterval } from 'date-fns';
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { Swords, Plus, HelpCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AnimatePresence, motion } from 'framer-motion';
+import type { BossQuestType } from '@/lib/types';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 export function BossQuests() {
-  const { tasks } = useQuest();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const { tasks, addBossQuest } = useQuest();
+  const [showForm, setShowForm] = useState(false);
+  const [newQuestText, setNewQuestText] = useState('');
+  const [questType, setQuestType] = useState<BossQuestType>('weekly');
 
   const bossQuests = useMemo(() => {
-    if (!isClient) return [];
-    
-    const now = new Date();
-    const weekInterval = { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
-    const monthInterval = { start: startOfMonth(now), end: endOfMonth(now) };
+    return tasks.filter(task => task.isBossQuest);
+  }, [tasks]);
 
-    return tasks.filter(task => {
-      if (task.isBossQuest === 'weekly') {
-        return isWithinInterval(new Date(task.createdAt), weekInterval);
-      }
-      if (task.isBossQuest === 'monthly') {
-        return isWithinInterval(new Date(task.createdAt), monthInterval);
-      }
-      return false;
-    });
-  }, [tasks, isClient]);
-
-  if (bossQuests.length === 0) return null;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newQuestText.trim()) {
+      addBossQuest(newQuestText, questType);
+      setNewQuestText('');
+      setShowForm(false);
+    }
+  };
 
   return (
     <Card className="border-border/60 bg-card/60">
       <CardHeader>
-        <div className="flex items-center gap-3">
-            <Swords className="h-6 w-6 text-primary text-glow-primary"/>
-            <div>
-                 <CardTitle className="text-xl">Boss Quests</CardTitle>
-                <CardDescription>High-risk, high-reward challenges.</CardDescription>
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <Swords className="h-6 w-6 text-primary text-glow-primary"/>
+                <div>
+                    <CardTitle className="text-xl">Boss Quests</CardTitle>
+                    <div className="flex items-center gap-1.5">
+                      <CardDescription>High-risk, high-reward timed challenges.</CardDescription>
+                      <TooltipProvider>
+                        <Tooltip delayDuration={0}>
+                          <TooltipTrigger>
+                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Weekly quests last 7 days. Monthly last 30 days.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                </div>
             </div>
+            <Button variant="ghost" size="icon" onClick={() => setShowForm(p => !p)}>
+                <Plus className="h-5 w-5" />
+            </Button>
         </div>
       </CardHeader>
       <CardContent>
+        <AnimatePresence>
+            {showForm && (
+                 <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden mb-4"
+                >
+                    <form onSubmit={handleSubmit} className="flex gap-2">
+                    <Input
+                        placeholder="Add a new boss quest..."
+                        value={newQuestText}
+                        onChange={(e) => setNewQuestText(e.target.value)}
+                        className="bg-background/50 focus:bg-background"
+                    />
+                    <Select onValueChange={(value: BossQuestType) => setQuestType(value)} defaultValue={questType}>
+                        <SelectTrigger className="w-[140px] bg-background/50 focus:bg-background">
+                            <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="monthly">Monthly</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Button type="submit" size="icon" className="flex-shrink-0">
+                        <Plus />
+                    </Button>
+                    </form>
+                </motion.div>
+            )}
+        </AnimatePresence>
         <div className="space-y-2">
-          {bossQuests.map(quest => (
-            <TaskItem key={quest.id} task={quest} />
-          ))}
+          {bossQuests.length > 0 ? (
+            bossQuests.map(quest => (
+                <TaskItem key={quest.id} task={quest} />
+            ))
+           ) : (
+             <div className="text-center py-6">
+                <p className="text-muted-foreground">No active boss quests.</p>
+                <p className="text-sm text-muted-foreground/70">Click the '+' to create one.</p>
+             </div>
+           )
+          }
         </div>
       </CardContent>
     </Card>
