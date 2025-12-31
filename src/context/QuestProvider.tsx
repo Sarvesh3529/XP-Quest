@@ -63,6 +63,18 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
   const [rankUpInfo, setRankUpInfo] = useState<{ oldRank: Rank; newRank: Rank } | null>(null);
   const [flashLock, setFlashLock] = useState(false);
 
+  // Effect to handle day change if app is open overnight
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const today = startOfDay(new Date());
+      if (!isSameDay(selectedDate, today)) {
+        setSelectedDate(today);
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [selectedDate]);
+
   // Memoized derived state
   const formattedSelectedDate = useMemo(() => format(selectedDate, 'yyyy-MM-dd'), [selectedDate]);
   const isDateLocked = useMemo(() => lockedDates.includes(formattedSelectedDate), [lockedDates, formattedSelectedDate]);
@@ -124,20 +136,25 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
 
-    if (!task.isBossQuest && !isDateLocked) {
+    if (!task.isBossQuest && !isDateLocked && !isSameDay(new Date(task.createdAt), new Date())) {
+        // This is for past, unlocked dates. Silently prevent completion.
+        return;
+    }
+    
+    if (!task.isBossQuest && !isDateLocked && isSameDay(new Date(task.createdAt), new Date())) {
       setFlashLock(true);
       setTimeout(() => setFlashLock(false), 1000);
       return;
     }
 
     const existingCompletion = completions.find(c => c.taskId === taskId);
+    const xpGained = getXpForTask(taskId);
 
     if (existingCompletion) {
       // Un-complete task
       setCompletions(prev => prev.filter(c => c.id !== existingCompletion.id));
     } else {
       // Complete task
-      const xpGained = getXpForTask(taskId);
       const newCompletion: Completion = {
         id: crypto.randomUUID(),
         taskId,
@@ -146,8 +163,8 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
         completedAt: Date.now(),
       };
       setCompletions(prev => [...prev, newCompletion]);
-      return xpGained;
     }
+    return xpGained;
   };
 
   const addTask = (text: string, difficulty: TaskDifficulty) => {
