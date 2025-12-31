@@ -86,8 +86,6 @@ export function TaskItem({ task }: { task: Task }) {
     }
   };
 
-  const canBeDeleted = !isDateLocked && !task.isBossQuest;
-
   const config = task.isBossQuest 
     ? bossQuestConfig[task.isBossQuest]
     : difficultyConfig[task.difficulty];
@@ -139,8 +137,7 @@ export function TaskItem({ task }: { task: Task }) {
             </Tooltip>
         </TooltipProvider>
 
-        {canBeDeleted ? (
-          <Button
+        <Button
             size="icon"
             variant="ghost"
             onClick={() => deleteTask(task.id)}
@@ -148,8 +145,7 @@ export function TaskItem({ task }: { task: Task }) {
             aria-label="Delete task"
           >
             <Trash2 className="h-4 w-4" />
-          </Button>
-        ) : <div className="h-7"/>}
+        </Button>
       </div>
     </div>
   );
