@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Progress } from "@/components/ui/progress";
 import * as LucideIcons from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Crown, Trophy } from "lucide-react";
 
 const Icon = ({ name, className }: { name: string, className?: string }) => {
+    if (name === 'Trophy') return <Trophy className={className} />;
+    if (name === 'Crown') return <Crown className={className} />;
     const LucideIcon = (LucideIcons as any)[name];
     if (!LucideIcon) return <LucideIcons.ShieldQuestion className={className} />;
     return <LucideIcon className={cn(className)} />;
@@ -55,11 +57,11 @@ export function RankApp() {
                                 <div className="flex-shrink-0 mr-4">
                                      <Icon name={rank.icon} className="w-12 h-12 text-primary/80" />
                                 </div>
-                                <div className="flex-grow">
+                                <div className="flex-grow text-center">
                                     <h3 className="text-lg font-bold">{rank.name}</h3>
                                     <p className="text-sm font-code text-muted-foreground">{rank.xpThreshold.toLocaleString()} XP</p>
                                 </div>
-                                {isAchieved && <CheckCircle className="w-6 h-6 text-primary flex-shrink-0" />}
+                                {isAchieved ? <CheckCircle className="w-6 h-6 text-primary flex-shrink-0" /> : <div className="w-6 h-6 flex-shrink-0"/>}
                             </Card>
                         )
                     })}
