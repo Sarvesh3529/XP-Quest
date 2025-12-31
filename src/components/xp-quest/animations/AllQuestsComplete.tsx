@@ -17,7 +17,7 @@ const ConfettiPiece = ({ left, top, delay, duration, color }: any) => (
 
 export function AllQuestsComplete() {
   const [visible, setVisible] = useState(true);
-  const confettiColors = ['#39FF14', '#7DF9FF', '#FFFFFF'];
+  const confettiColors = ['hsl(var(--primary))', 'hsl(var(--accent))', '#FFFFFF'];
   const numConfetti = 100;
 
   useEffect(() => {
