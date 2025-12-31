@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Skeleton } from '@/components/ui/skeleton';
+import { subDays } from 'date-fns';
 
 
 export function BossQuests() {
@@ -32,10 +33,17 @@ export function BossQuests() {
   }, []);
 
   const bossQuests = useMemo(() => {
+    const oneDayAgo = subDays(new Date(), 1).getTime();
     return tasks.filter(task => {
       if (!task.isBossQuest) return false;
-      const isCompleted = completions.some(c => c.taskId === task.id);
-      return !isCompleted;
+      
+      const completion = completions.find(c => c.taskId === task.id);
+      if (completion) {
+        // If completed, check if it was completed more than 24 hours ago
+        return completion.completedAt > oneDayAgo;
+      }
+
+      return true; // Not completed, so show it
     });
   }, [tasks, completions]);
 

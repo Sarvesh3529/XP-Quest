@@ -142,6 +142,7 @@ export function QuestProvider({ children }: { children: React.ReactNode }) {
         taskId,
         date: task.isBossQuest ? format(new Date(), 'yyyy-MM-dd') : formattedSelectedDate,
         xpGained,
+        completedAt: Date.now(),
       };
       setCompletions(prev => [...prev, newCompletion]);
       return xpGained;

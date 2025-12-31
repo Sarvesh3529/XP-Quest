@@ -27,6 +27,7 @@ export interface Completion {
   taskId: string;
   date: string; // YYYY-MM-DD
   xpGained: number;
+  completedAt: number; // timestamp
 }
 
 export interface WakeUpTime {
