@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useQuest } from '@/hooks/useQuest';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { TaskItem } from './TaskItem';
@@ -16,6 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 export function BossQuests() {
@@ -23,6 +25,11 @@ export function BossQuests() {
   const [showForm, setShowForm] = useState(false);
   const [newQuestText, setNewQuestText] = useState('');
   const [questType, setQuestType] = useState<BossQuestType>('weekly');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const bossQuests = useMemo(() => {
     return tasks.filter(task => task.isBossQuest);
@@ -99,7 +106,11 @@ export function BossQuests() {
             )}
         </AnimatePresence>
         <div className="space-y-2">
-          {bossQuests.length > 0 ? (
+          {!isClient ? (
+            <div className="space-y-2">
+              <Skeleton className="h-16 w-full" />
+            </div>
+          ) : bossQuests.length > 0 ? (
             bossQuests.map(quest => (
                 <TaskItem key={quest.id} task={quest} />
             ))
