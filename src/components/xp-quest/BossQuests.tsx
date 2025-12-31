@@ -21,7 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 
 export function BossQuests() {
-  const { tasks, addBossQuest } = useQuest();
+  const { tasks, addBossQuest, completions } = useQuest();
   const [showForm, setShowForm] = useState(false);
   const [newQuestText, setNewQuestText] = useState('');
   const [questType, setQuestType] = useState<BossQuestType>('weekly');
@@ -32,8 +32,12 @@ export function BossQuests() {
   }, []);
 
   const bossQuests = useMemo(() => {
-    return tasks.filter(task => task.isBossQuest);
-  }, [tasks]);
+    return tasks.filter(task => {
+      if (!task.isBossQuest) return false;
+      const isCompleted = completions.some(c => c.taskId === task.id);
+      return !isCompleted;
+    });
+  }, [tasks, completions]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
