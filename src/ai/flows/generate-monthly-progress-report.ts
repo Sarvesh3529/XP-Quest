@@ -19,10 +19,10 @@ const GenerateMonthlyReportInputSchema = z.object({
 export type GenerateMonthlyReportInput = z.infer<typeof GenerateMonthlyReportInputSchema>;
 
 const GenerateMonthlyReportOutputSchema = z.object({
-  report: z.string().describe('The generated monthly progress report.'),
+  report: z.string().describe('The generated monthly progress report, formatted in paragraphs.'),
   improvementSuggestions: z
     .string()
-    .describe('Suggestions for improvement in the next month.'),
+    .describe('Suggestions for improvement in the next month, formatted as a bulleted or numbered list.'),
 });
 export type GenerateMonthlyReportOutput = z.infer<typeof GenerateMonthlyReportOutputSchema>;
 
@@ -36,11 +36,14 @@ const generateMonthlyReportPrompt = ai.definePrompt({
   name: 'generateMonthlyReportPrompt',
   input: {schema: GenerateMonthlyReportInputSchema},
   output: {schema: GenerateMonthlyReportOutputSchema},
-  prompt: `You are an AI assistant that generates monthly progress reports.
-Based on the following completed tasks, generate a comprehensive monthly progress report and provide actionable suggestions for improvement next month.
+  prompt: `You are a Life Coach AI. Your role is to provide encouraging and insightful monthly progress reports based on a user's completed tasks.
 
-Completed Tasks: {{{completedTasks}}}
-`,
+Analyze the following list of tasks completed this month:
+{{{completedTasks}}}
+
+Based on these tasks, generate:
+1.  A comprehensive, paragraph-based 'Monthly Progress Report' that summarizes the user's achievements and patterns.
+2.  A bulleted or numbered list of 'Improvement Suggestions' with actionable advice for the upcoming month.`,
 });
 
 const generateMonthlyReportFlow = ai.defineFlow(
