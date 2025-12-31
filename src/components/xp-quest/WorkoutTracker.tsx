@@ -29,8 +29,16 @@ export function WorkoutTracker() {
   }
 
   return (
-    <div className="relative h-full flex flex-col gap-2 p-4 rounded-lg bg-card/60 border border-border/60">
-      {workoutForSelectedDate || showAnimation ? (
+    <div className="relative h-[152px] flex flex-col gap-2 p-4 rounded-lg bg-card/60 border border-border/60">
+      {workoutForSelectedDate && !showAnimation ? (
+         <div className="flex flex-col items-center justify-center text-center h-full">
+            <Dumbbell className="w-10 h-10 text-primary mb-2"/>
+            <h3 className="font-semibold">Activity Logged</h3>
+            <p className="text-sm text-muted-foreground">
+              You logged a {workoutForSelectedDate.workedOut ? "workout" : "rest day"}.
+            </p>
+        </div>
+      ) : showAnimation ? (
         <WorkoutLoggedAnimation 
           workedOut={workoutForSelectedDate?.workedOut ?? false} 
           onAnimationComplete={() => setShowAnimation(false)} 
