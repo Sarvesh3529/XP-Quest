@@ -21,7 +21,7 @@ export function QuestApp() {
     return (
         <div className="relative">
             {rankUpInfo && <RankUpAnimation />}
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
                 <DatePicker />
                 <RankBadge />
                 
@@ -30,9 +30,9 @@ export function QuestApp() {
                     <WakeUpTime />
                 </div>
 
-                <WorkoutTracker />
-
                 <div className="space-y-6">
+                    <WorkoutTracker />
+                    
                     <Card className="border-border/60 bg-card/60">
                         <CardHeader>
                             <div className="flex items-center gap-3">
