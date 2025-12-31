@@ -1,13 +1,20 @@
+
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useQuest } from '@/hooks/useQuest';
 import { TaskItem } from './TaskItem';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AllQuestsComplete } from './animations/AllQuestsComplete';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function TaskList() {
   const { tasksForSelectedDate, completionsForSelectedDate, isDateLocked } = useQuest();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const dailyTasks = useMemo(() => 
     tasksForSelectedDate.filter(t => !t.isBossQuest),
@@ -26,6 +33,15 @@ export function TaskList() {
 
   const allTasksCompleted = dailyTasks.length > 0 && uncompletedTasks.length === 0 && isDateLocked;
   
+  if (!isClient) {
+    return (
+        <div className="space-y-2">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+        </div>
+    );
+  }
+
   return (
     <div className="relative">
       <AnimatePresence>
