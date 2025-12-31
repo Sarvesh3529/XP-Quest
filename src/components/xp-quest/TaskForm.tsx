@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuest } from '@/hooks/useQuest';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,11 +10,17 @@ import { Lock, Plus, Unlock } from 'lucide-react';
 import type { TaskDifficulty } from '@/lib/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function TaskForm() {
   const { addTask, lockDate, isDateLocked, tasksForSelectedDate, flashLock } = useQuest();
   const [newTaskText, setNewTaskText] = useState('');
   const [difficulty, setDifficulty] = useState<TaskDifficulty>('Easy');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +31,10 @@ export function TaskForm() {
   };
 
   const dailyTasksExist = tasksForSelectedDate.some(t => !t.isBossQuest);
+
+  if (!isClient) {
+    return <Skeleton className="h-[76px] w-full" />;
+  }
 
   return (
     <div>
