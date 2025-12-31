@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuest } from '@/hooks/useQuest';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -17,6 +18,11 @@ export function ReportApp() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [currentDate] = useState(new Date());
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleGenerateReport = async () => {
     setIsLoading(true);
@@ -65,6 +71,8 @@ export function ReportApp() {
   
   const reportIsForCurrentMonth = monthlyReport && getMonth(new Date(monthlyReport.generatedDate)) === getMonth(currentDate) && getYear(new Date(monthlyReport.generatedDate)) === getYear(currentDate);
 
+  const showReport = isClient && reportIsForCurrentMonth && monthlyReport;
+
   return (
     <div className="container mx-auto max-w-4xl">
         <Card className="border-border/60">
@@ -83,7 +91,7 @@ export function ReportApp() {
             </div>
         </CardHeader>
         <CardContent>
-            {reportIsForCurrentMonth && monthlyReport ? (
+            {showReport ? (
             <div className="space-y-6 animate-in fade-in duration-500">
                 <div>
                 <h3 className="font-bold text-lg mb-2 text-primary">Performance Debrief</h3>
